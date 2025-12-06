@@ -6,7 +6,7 @@ default:
   llm:
     api_base_url: ${OPENAI_BASE_URL}
     api_key: ${OPENAI_API_KEY}
-    model: "o3-mini"
+    model: "gpt-4o"
 
 workflow:
   prototype:

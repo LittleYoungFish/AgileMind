@@ -18,7 +18,7 @@ class ApplicationLogFilter(logging.Filter):
 
     def __init__(self):
         super().__init__()
-        self.allowed_modules = ["agilemind"]
+        self.allowed_modules = ["codeagent"]
 
     def filter(self, record):
         # Always allow direct print statements
@@ -411,7 +411,7 @@ def display_development_stats():
             st.download_button(
                 label="Download Project as ZIP",
                 data=zip_data,
-                file_name="agilemind_project.zip",
+                file_name="codeagent_project.zip",
                 mime="application/zip",
                 help="Download the complete project as a ZIP file",
                 icon="📦",
@@ -628,7 +628,7 @@ def display_development_stats():
 
 # Set page config
 st.set_page_config(
-    page_title="AgileMind - Multi-Agent Development Team",
+    page_title="CodeAgent - Complex code generation Agent",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -654,12 +654,12 @@ if (
     not st.session_state.development_complete
     and not st.session_state.development_in_progress
 ):
-    st.title("AgileMind")
-    st.caption("Multi-Agent Development Team")
+    st.title("CodeAgent")
+    st.caption("Complex code generation Agent")
 
 
 with st.sidebar:
-    st.title("AgileMind")
+    st.title("CodeAgent")
 
     if st.button("New Project", use_container_width=True):
         st.session_state.development_complete = False
@@ -708,7 +708,7 @@ with st.sidebar:
         # Output directory
         output_dir = st.text_input(
             "Output Directory",
-            value=tempfile.mkdtemp(prefix="agilemind_output_"),
+            value=tempfile.mkdtemp(prefix="codeagent_output_"),
             help="Directory where the generated project will be saved",
             disabled=True,
         )
@@ -754,7 +754,7 @@ else:
         demand = st.text_area(
             "Describe the software you want to build",
             height=150,
-            help="Provide a detailed description of what you want AgileMind to build",
+            help="Provide a detailed description of what you want CodeAgent to build",
             value="Create a 2048 game with a modern UI, keyboard controls, and score tracking.",
         )
 
