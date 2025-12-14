@@ -13,12 +13,144 @@ from agilemind.agile import dev as agile_dev
 from contextlib import contextmanager, redirect_stdout, redirect_stderr
 
 
+# -------------------------------------------
+# -------------- 🎨 UI & Styling (Light Mode)
+# -------------------------------------------
+
+def set_page_styling():
+    """注入现代、明亮、科技风的 CSS 样式 (Light Tech Theme)"""
+    st.markdown("""
+        <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+
+        /* 全局设置 */
+        .stApp {
+            background-color: #FFFFFF; /* 纯白背景 */
+            color: #1F2937; /* 深灰字体，对比度高且不刺眼 */
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* 侧边栏 - 极浅灰区分 */
+        section[data-testid="stSidebar"] {
+            background-color: #F9FAFB;
+            border-right: 1px solid #E5E7EB;
+        }
+
+        /* 标题样式 - 现代商务感 */
+        h1, h2, h3 {
+            color: #111827 !important;
+            font-weight: 700;
+            letter-spacing: -0.5px; /* 紧凑字间距显得更现代 */
+        }
+
+        /* 自定义容器 - 卡片式设计 */
+        .tech-card {
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB; /* 极细边框 */
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03); /* 苹果风柔和阴影 */
+            margin-bottom: 20px;
+        }
+
+        /* 输入框优化 */
+        .stTextInput input, .stTextArea textarea, .stSelectbox div[data-baseweb="select"] {
+            background-color: #FFFFFF;
+            color: #1F2937;
+            border: 1px solid #D1D5DB;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .stTextInput input:focus, .stTextArea textarea:focus {
+            border-color: #2563EB; /* 科技蓝 */
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* 按钮 - 醒目的科技蓝渐变 */
+        .stButton button {
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+        }
+        .stButton button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+            color: white;
+        }
+
+        /* 指标卡片 (Metrics) */
+        div[data-testid="stMetric"] {
+            background-color: #F3F4F6; /* 浅灰背景 */
+            padding: 16px;
+            border-radius: 10px;
+            border: 1px solid #E5E7EB;
+        }
+        div[data-testid="stMetricLabel"] {
+            color: #6B7280;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        div[data-testid="stMetricValue"] {
+            color: #111827;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+        }
+
+        /* 选项卡 (Tabs) */
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 8px;
+        }
+        .stTabs [data-baseweb="tab"] {
+            background-color: transparent;
+            border-bottom: 2px solid transparent;
+            color: #6B7280;
+            font-weight: 600;
+        }
+        .stTabs [aria-selected="true"] {
+            background-color: transparent !important;
+            color: #2563EB !important; /* 选中变蓝 */
+            border-bottom: 2px solid #2563EB;
+        }
+
+        /* 日志区域样式 - 实验室风格 */
+        .log-container {
+            font-family: 'JetBrains Mono', monospace;
+            background-color: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            color: #334155;
+        }
+
+        /* Expander 头部 */
+        .streamlit-expanderHeader {
+            background-color: #F9FAFB;
+            border: 1px solid #E5E7EB;
+            color: #1F2937;
+            font-weight: 600;
+            border-radius: 8px;
+        }
+
+        /* 隐藏 Streamlit 默认的 Header */
+        header {visibility: hidden;}
+        </style>
+    """, unsafe_allow_html=True)
+
+
+# -------------------------------------------
+# -------------- Logic Classes --------------
+# -------------------------------------------
+
 class ApplicationLogFilter(logging.Filter):
     """Filter to only show logs from agilemind modules and direct prints."""
 
     def __init__(self):
         super().__init__()
-        self.allowed_modules = ["agilemind"]
+        self.allowed_modules = ["codeagent"]
 
     def filter(self, record):
         # Always allow direct print statements
@@ -68,9 +200,12 @@ class WebLogHandler(logging.Handler):
 
             # Update display with all logs
             self.log_output.append(log_entry)
+
+            # 使用更干净的代码块样式
+            log_text = "\n".join(self.log_output)
             self.log_area.code(
-                "\n".join(self.log_output),
-                language=None,
+                log_text,
+                language="bash",
                 line_numbers=True,
                 wrap_lines=True,
                 height=350,
@@ -88,8 +223,11 @@ class WebLogHandler(logging.Handler):
 
 def setup_logging():
     """Set up logging to capture both Python logs and stdout/stderr."""
-    # Create a container for logs
+    # Create a container for logs with the new card style
+    st.markdown('<div class="tech-card">', unsafe_allow_html=True)
+    st.markdown("### 🧬 System Execution Logs")
     log_container = st.container()
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Create and configure our custom handler
     handler = WebLogHandler(log_container)
@@ -138,7 +276,7 @@ def setup_environment(api_key: str, api_base_url: Optional[str] = None):
     finally:
         # Clean up: remove the temporary .env file
         if st.session_state.env_file_path and os.path.exists(
-            st.session_state.env_file_path
+                st.session_state.env_file_path
         ):
             os.unlink(st.session_state.env_file_path)
             st.session_state.env_file_path = None
@@ -243,7 +381,7 @@ def display_file(file_path: str, content: str):
     }
     language = language_map.get(extension, "text")
 
-    with st.expander(file_path):
+    with st.expander(f"📄 {file_path}"):
         if content == "(Binary file)":
             st.write("Binary file, preview not available")
         else:
@@ -251,13 +389,13 @@ def display_file(file_path: str, content: str):
 
 
 def start_development_process(
-    demand: str,
-    model: str,
-    output_dir: str,
-    api_key: str,
-    api_base_url: str,
-    uploaded_file: Optional[io.BytesIO] = None,
-    max_iterations: int = 5,
+        demand: str,
+        model: str,
+        output_dir: str,
+        api_key: str,
+        api_base_url: str,
+        uploaded_file: Optional[io.BytesIO] = None,
+        max_iterations: int = 5,
 ):
     """Actual development process execution after UI update."""
     # Set up logging before starting the process
@@ -267,10 +405,10 @@ def start_development_process(
         try:
             # Redirect stdout/stderr to our logger during development
             with redirect_stdout(stdout_redirect), redirect_stderr(stderr_redirect):
-                logging.info("Starting development process...")
-                logging.info(f"Demand: {demand}")
-                logging.info(f"Model: {model}")
-                logging.info(f"Output directory: {output_dir}")
+                logging.info(">>> INITIALIZING AGENT WORKFLOW...")
+                logging.info(f"Target Objective: {demand}")
+                logging.info(f"Model Engine: {model}")
+                logging.info(f"Workspace: {output_dir}")
 
                 # Handle the uploaded file if present
                 file_path = None
@@ -283,7 +421,7 @@ def start_development_process(
                     temp_file.close()
                     file_path = temp_file.name
                     logging.info(
-                        f"Using uploaded file: {uploaded_file.name} (saved as {file_path})"
+                        f"Resource Loaded: {uploaded_file.name} (temp path: {file_path})"
                     )
 
                 result = agile_dev(
@@ -309,10 +447,10 @@ def start_development_process(
             st.session_state.development_stats = result
 
         except Exception as e:
-            logging.error(f"Error during development: {str(e)}")
+            logging.error(f"WORKFLOW INTERRUPTED: {str(e)}")
             st.exception(e)
         finally:
-            st.toast("Development process completed")
+            st.toast("✅ Development Cycle Completed")
             st.session_state.development_complete = True
             st.session_state.development_in_progress = False
             st.rerun()
@@ -324,12 +462,9 @@ def display_development_stats():
 
     # Check if stats has required data
     if not stats or not isinstance(stats, dict):
-        st.header("⚠️ Development Statistics Unavailable")
+        st.header("⚠️ Statistics Unavailable")
         st.warning(
-            "Development statistics not available.\n\n"
-            "This could be due to an error during the development process or "
-            "the process not being completed successfully.\n\n"
-            "Please try again or check the logs for more information."
+            "Development statistics are not available. This might be due to a process interruption."
         )
         return
 
@@ -338,27 +473,29 @@ def display_development_stats():
     cost_data = stats.get("cost", {})
     used_tools = stats.get("used_tools", [])
 
-    st.header("Development Process Overview")
+    st.markdown("## 📊 Agent Performance Report")
+
     st.info(
-        "The web platform does not support interactive development and parallelization yet. "
-        "The time usage may be more than expected."
+        "ℹ️ **Note:** Platform currently operating in non-interactive mode. Optimization latency may vary."
     )
 
     tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(
         [
-            "Summary",
-            "Files",
+            "Overview",
+            "Artifacts",
             "Token Usage",
             "API Calls",
             "Cost Analysis",
-            "Development Timeline",
+            "Timeline",
         ]
     )
+
     with tab0:
-        st.subheader("Development Results")
+        st.markdown('<div class="tech-card">', unsafe_allow_html=True)
+        st.subheader("Summary Metrics")
         col1, col2, col3, col4 = st.columns([2, 1, 1, 1])
         with col1:
-            st.subheader("Time")
+            st.markdown("**⏳ Duration**")
             started_at = stats.get("started_at", "")
             finished_at = stats.get("finished_at", "")
 
@@ -371,55 +508,56 @@ def display_development_stats():
                 st.metric("Finish", finished_at)
                 st.metric("Elapsed", f"{elapsed_time.total_seconds() / 60:.2f} min")
             else:
-                st.warning("Time information not available")
+                st.warning("Time data pending")
 
         with col2:
-            st.subheader("Token")
+            st.markdown("**🔢 Tokens**")
             prompt_tokens = token_usage.get("total", {}).get("prompt_tokens", 0)
             completion_tokens = token_usage.get("total", {}).get("completion_tokens", 0)
             total_token_count = token_usage.get("total", {}).get("total_tokens", 0)
-            st.metric("Prompt Tokens", f"{prompt_tokens:,}")
-            st.metric("Completion Tokens", f"{completion_tokens:,}")
-            st.metric("Total Tokens", f"{total_token_count:,}")
+            st.metric("Input", f"{prompt_tokens:,}")
+            st.metric("Output", f"{completion_tokens:,}")
+            st.metric("Total", f"{total_token_count:,}")
 
         with col3:
-            st.subheader("Cost")
+            st.markdown("**💳 Cost**")
             prompt_cost = cost_data.get("total", {}).get("prompt_cost", 0.0)
             completion_cost = cost_data.get("total", {}).get("completion_cost", 0.0)
             total_cost = cost_data.get("total", {}).get("total_cost", 0.0)
-            st.metric("Prompt Cost", f"${prompt_cost:.4f}")
-            st.metric("Completion Cost", f"${completion_cost:.4f}")
-            st.metric("Total Cost", f"${total_cost:.4f}")
+            st.metric("Input", f"${prompt_cost:.4f}")
+            st.metric("Output", f"${completion_cost:.4f}")
+            st.metric("Total", f"${total_cost:.4f}")
 
         with col4:
-            st.subheader("Files")
+            st.markdown("**📁 Output**")
             files = st.session_state.generated_files
             code_files = [
                 f for f in files if f.endswith((".py", ".js", ".html", ".css"))
             ]
             doc_files = [f for f in files if f.endswith((".md", ".txt", ".json"))]
-            st.metric("Code Files", len(code_files))
-            st.metric("Line Count", sum(len(files[f].splitlines()) for f in code_files))
-            st.metric("Doc Files", len(doc_files))
+            st.metric("Source Files", len(code_files))
+            st.metric("Total Lines", sum(len(files[f].splitlines()) for f in code_files))
+            st.metric("Documents", len(doc_files))
+        st.markdown('</div>', unsafe_allow_html=True)
 
     with tab1:
         # Display file structure
-        st.header("Project Files")
+        st.markdown("### Generated Project Files")
         # Offer download
         if st.session_state.output_dir and os.path.exists(st.session_state.output_dir):
             zip_data = create_zip_from_directory(st.session_state.output_dir)
             st.download_button(
-                label="Download Project as ZIP",
+                label="📥 Download Project (ZIP)",
                 data=zip_data,
-                file_name="agilemind_project.zip",
+                file_name="codeagent_project.zip",
                 mime="application/zip",
-                help="Download the complete project as a ZIP file",
+                help="Download entire workspace archive",
                 icon="📦",
             )
         if st.session_state.generated_files:
             display_file_structure(st.session_state.generated_files)
         else:
-            st.warning("No files were generated.")
+            st.warning("No files generated in this session.")
 
     with tab2:
         # Process token usage by agent data
@@ -437,21 +575,28 @@ def display_development_stats():
             )
 
             with st.container():
+                # 使用白色主题的 Plotly
                 fig = px.pie(
                     agent_df,
                     values="Prompt Tokens",
                     names="Agent",
-                    title="Token Usage by Agent",
+                    title="Token Distribution by Agent",
                     hover_data=["Completion Tokens"],
-                    labels={"Prompt Tokens": "Prompt Tokens"},
+                    template="plotly_white",  # 关键：切换到白色主题
+                    color_discrete_sequence=px.colors.sequential.Blues
                 )
+                fig.update_layout(
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                )
+                fig.update_traces(textposition='inside', textinfo='percent+label')
                 st.plotly_chart(fig, use_container_width=True)
 
             with st.container():
                 # Display detailed token usage table
                 agent_df = agent_df.sort_values("Prompt Tokens", ascending=False)
                 agent_df["Total Tokens"] = (
-                    agent_df["Prompt Tokens"] + agent_df["Completion Tokens"]
+                        agent_df["Prompt Tokens"] + agent_df["Completion Tokens"]
                 )
 
                 # Ensure all token columns are numeric type
@@ -462,13 +607,6 @@ def display_development_stats():
                         errors="coerce",
                     )
 
-                agent_df = agent_df.rename(
-                    columns={
-                        "Prompt Tokens": "Prompt Tokens",
-                        "Completion Tokens": "Completion Tokens",
-                        "Total Tokens": "Total Tokens",
-                    }
-                )
                 st.dataframe(
                     agent_df.style.background_gradient(
                         subset=["Total Tokens"], cmap="Blues"
@@ -503,15 +641,15 @@ def display_development_stats():
                     .rename(
                         columns={
                             "agent": "Agent",
-                            "round": "Round",
+                            "round": "Rd",
                             "model": "Model",
-                            "prompt_tokens": "Prompt Tokens",
-                            "completion_tokens": "Completion Tokens",
-                            "total_tokens": "Total Tokens",
+                            "prompt_tokens": "In",
+                            "completion_tokens": "Out",
+                            "total_tokens": "Total",
                             "formatted_time": "Time",
                         }
                     )
-                    .style.background_gradient(subset=["Total Tokens"], cmap="Blues")
+                    .style.background_gradient(subset=["Total"], cmap="Blues")
                 )
 
                 # Completion-to-prompt ratio
@@ -519,7 +657,7 @@ def display_development_stats():
                 total_completion = calls_df["completion_tokens"].sum()
                 if total_prompt > 0:
                     ratio = total_completion / total_prompt
-                    st.metric("Completion-to-Prompt Ratio", f"{ratio:.2f}")
+                    st.metric("Generation Efficiency Ratio", f"{ratio:.2f}")
 
     with tab4:
         agent_cost_data = cost_data.get("by_agent", {})
@@ -543,14 +681,16 @@ def display_development_stats():
                 cost_df,
                 values="Total Cost",
                 names="Agent",
-                title="Cost Distribution by Agent",
+                title="Cost Allocation",
                 hover_data=["Prompt Cost", "Completion Cost"],
-                labels={"Total Cost": "Total Cost ($)"},
+                template="plotly_white",
+                color_discrete_sequence=px.colors.sequential.PuBu
             )
+            fig.update_layout(paper_bgcolor="rgba(0,0,0,0)")
             st.plotly_chart(fig, use_container_width=True)
 
             # Display detailed cost table
-            with st.expander("View Cost Details"):
+            with st.expander("Show Financial Ledger"):
                 # Format currency columns to display as $
                 for col in ["Prompt Cost", "Completion Cost", "Total Cost"]:
                     cost_df[col] = cost_df[col].map("${:.4f}".format)
@@ -602,13 +742,20 @@ def display_development_stats():
                     x_end="End Time",
                     y="Step",
                     color="Step",
-                    title="Development Process Timeline",
+                    title="Process Timeline",
+                    template="plotly_white",
+                    color_discrete_sequence=px.colors.qualitative.Prism
                 )
-                fig.update_layout(xaxis_title="Time", yaxis_title="")
+                fig.update_layout(
+                    xaxis_title="Time",
+                    yaxis_title="",
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)"
+                )
                 st.plotly_chart(fig, use_container_width=True)
 
                 # Display steps table
-                with st.expander("View Development Steps"):
+                with st.expander("View Execution Steps"):
                     # Format for display
                     display_df = history_df.copy()
                     display_df["Time"] = display_df["Time"].dt.strftime("%H:%M:%S")
@@ -628,11 +775,14 @@ def display_development_stats():
 
 # Set page config
 st.set_page_config(
-    page_title="AgileMind - Multi-Agent Development Team",
-    page_icon="🧠",
+    page_title="CodeAgent | Intelligent Dev System",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# Apply Light/Clean Tech Styles
+set_page_styling()
 
 # State management
 if "output_dir" not in st.session_state:
@@ -651,17 +801,16 @@ if "logs" not in st.session_state:
     st.session_state.logs = []
 
 if (
-    not st.session_state.development_complete
-    and not st.session_state.development_in_progress
+        not st.session_state.development_complete
+        and not st.session_state.development_in_progress
 ):
-    st.title("AgileMind")
-    st.caption("Multi-Agent Development Team")
-
+    st.title("CodeAgent")
+    st.caption("Intelligent Software Generation Platform")
 
 with st.sidebar:
-    st.title("AgileMind")
+    st.title("Control Center")
 
-    if st.button("New Project", use_container_width=True):
+    if st.button("➕ New Project", use_container_width=True):
         st.session_state.development_complete = False
         st.session_state.development_in_progress = False
         st.session_state.logs = []
@@ -672,47 +821,46 @@ with st.sidebar:
         st.rerun()
 
     st.markdown("---")
-    st.header("Configuration")
+    st.header("Settings")
 
     # API credentials
-    st.subheader("API Credentials")
+    st.subheader("API Configuration")
     api_key = st.text_input(
-        "OpenAI API Key", type="password", help="Your OpenAI API key"
+        "OpenAI API Key", type="password", help="Enter your valid API key"
     )
     api_base_url = st.text_input(
-        "API Base URL (Optional)",
+        "Base URL (Optional)",
         type="password",
         value="https://api.openai.com/v1",
-        help="Custom API endpoint URL (if using a proxy)",
+        help="Custom endpoint for API proxy",
     )
 
     # Model selection
-    st.subheader("Model Selection")
+    st.subheader("Inference Engine")
     model = st.selectbox(
         "Select Model",
         options=ModelLibrary.get_known_model_names(),
-        help="Choose the LLM to use",
+        help="Choose the underlying LLM",
     )
 
-    st.subheader("Advanced Settings")
+    st.subheader("Parameters")
     # Advanced settings as a collapsible drawer
-    with st.expander("Click to expand", expanded=False):
+    with st.expander("Advanced Configuration", expanded=False):
         max_iterations = st.slider(
             "Max Iterations",
             min_value=1,
             max_value=10,
             value=5,
-            help="Maximum number of development iterations",
+            help="Maximum recursive improvement cycles",
         )
 
         # Output directory
         output_dir = st.text_input(
-            "Output Directory",
-            value=tempfile.mkdtemp(prefix="agilemind_output_"),
-            help="Directory where the generated project will be saved",
+            "Output Path",
+            value=tempfile.mkdtemp(prefix="codeagent_output_"),
+            help="Local directory for generated artifacts",
             disabled=True,
         )
-
 
 # Main content area
 if st.session_state.development_complete:
@@ -720,17 +868,13 @@ if st.session_state.development_complete:
 
 
 elif st.session_state.development_in_progress:
-    st.header("Development in Progress")
+    st.title("🚀 Development in Progress")
     st.info(
-        "The web platform does not support interactive development and parallelization yet. "
-        "The time usage may be more than expected."
+        "The agents are currently planning, coding, and reviewing. This may take a few minutes."
     )
     st.markdown("---")
 
-    # Create log display area before starting the development process
-    log_display = st.container()
-    with log_display:
-        st.subheader("Development Logs")
+    # Log area is styled inside setup_logging
 
     start_development_process(
         demand=st.session_state.demand,
@@ -747,29 +891,40 @@ elif st.session_state.development_in_progress:
     )
 
 else:
-    st.write("\n" * 3)
-    st.subheader("Project Specification")
+    st.write("\n" * 2)
+
+    # Styled Container for Input - "Card" look
+    st.markdown('<div class="tech-card">', unsafe_allow_html=True)
+    st.subheader("🎯 Project Specification")
 
     with st.form("project_form"):
         demand = st.text_area(
-            "Describe the software you want to build",
+            "What would you like to build?",
             height=150,
-            help="Provide a detailed description of what you want AgileMind to build",
+            placeholder="e.g. Create a Python script that analyzes stock market trends...",
+            help="Provide clear, detailed requirements for best results.",
             value="Create a 2048 game with a modern UI, keyboard controls, and score tracking.",
         )
 
         # Add file uploader component
         uploaded_file = st.file_uploader(
-            "Upload a file (optional)",
-            help="Upload a file to be used in the development process",
+            "Context Files (Optional)",
+            help="Upload reference documents or existing code",
             type=None,  # Allow all file types
         )
 
-        if st.form_submit_button("Start Development"):
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # Centered Submit Button
+        col_submit = st.columns([1, 2, 1])
+        with col_submit[1]:
+            submitted = st.form_submit_button("Start Generation", use_container_width=True)
+
+        if submitted:
             if not api_key:
-                st.error("Please provide an API key")
+                st.error("⚠️ Authentication Required: Please provide an API Key.")
             elif not demand:
-                st.error("Please describe the software you want to build")
+                st.error("⚠️ Missing Input: Please describe your project requirements.")
             else:
                 st.session_state.demand = demand
                 if uploaded_file is not None:
@@ -777,3 +932,5 @@ else:
                 st.session_state.development_in_progress = True
                 st.session_state.development_complete = False
                 st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)

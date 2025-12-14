@@ -87,6 +87,13 @@ class ModelLibrary(Enum):
         is_multimodal=False,
         context_length=64000,
     )
+    DEEPSEEK_CHAT = ModelInfo(
+        "DeepSeek-chat",
+        0.000546,
+        0.002184,
+        is_multimodal=False,
+        context_length=64000,
+    )
 
     @classmethod
     def get_known_model_ids(cls) -> List[str]:
